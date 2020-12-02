@@ -1,0 +1,27 @@
+# A Handler is exactly the same as a Task (it can do anything a Task can), but it will only run when called by another Task. 
+# You can think of it as part of an Event system; A Handler will take an action when called by an event it listens for.
+# This is useful for "secondary" actions that might be required after running a Task, such as starting a new 
+# service after installation or reloading a service after a configuration change.
+#
+---
+# Example shows using the local machine still
+# Remove 'connection' and set hosts to 'remote' for a remote connection
+- hosts: local
+  connection: local
+  become: yes
+  become_user: root
+  tasks:
+   - name: Install Nginx
+     apt:
+       name: nginx
+       state: installed
+       update_cache: true
+# Here we add a notify directive to the installation Task. This notifies any Handler named "Start Nginx" after the Task is run.
+     notify:
+      - Start Nginx
+
+  handlers:
+   - name: Start Nginx
+     service:
+       name: nginx
+       state: started
