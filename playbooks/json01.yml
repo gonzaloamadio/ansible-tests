@@ -1,0 +1,55 @@
+---
+  - name: ReadJsonfile
+    hosts: localhost
+    tasks:
+      #  display the json file using the normal Shell command cat at this same tasks we are saving 
+      #  this output into a ansible register variable named result
+      - name: Display the JSON file content
+        shell: cat config.json
+        register: result
+
+        #  read the register variable of the previous task named result and convert that into a proper json data, 
+        #  this is done using from_json filter  and then we store it into a new ansible fact variable named jsondata
+        #  Now we have our JSON file content stored in jsondata variable after being formatted as proper JSON, 
+        #  which can be easily parsed now using ansible json query module.
+      - name: save the Json data to a Variable as a Fact
+        set_fact:
+          jsondata: "{{ result.stdout | from_json }}"
+
+      - name: setDomainName
+        set_fact:
+          domain_name: "{{ jsondata | json_query(jmesquery) }}"
+        vars:
+          jmesquery: 'domain.name'
+
+      - name: setDomainUsername
+        set_fact:
+          domain_username: "{{ jsondata | json_query(jmesquery) }}"
+        vars:
+          jmesquery: 'domain.user'
+
+      - name: setDomainPassword
+        set_fact:
+          domain_password: "{{ jsondata | json_query(jmesquery) }}"
+        vars:
+          jmesquery: 'domain.password'
+
+      - name: setadmin_Listenport
+        set_fact:
+          admin_ListenPort: "{{ jsondata | json_query(jmesquery) }}"
+        vars:
+          jmesquery: 'domain.admin.listenport'
+
+      - name: Debug the values
+        debug: msg=" Admin Listen Port => {{ admin_ListenPort }}, DomainName => {{ domain_name }}, DomainUserName => {{ domain_username }} , Domain Password => {{ domain_password }}"
+
+
+
+
+# REF: https://www.middlewareinventory.com/blog/ansible-playbook-read-json-file/
+
+# set_facts module sets variables once you know their values
+# You may set simple variables in ansible using vars, vars_file or include_vars modules,
+# however you know their values beforehand. In case of set_facts, you set variables on 
+# the fly depending on certain task results. These variables will be available to be used in the 
+# subsequent plays during an ansible playbook execution.

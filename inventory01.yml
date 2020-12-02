@@ -1,0 +1,34 @@
+[controller]
+control ansible_connection=local
+
+#[loadbalancer]
+#lb01 ansible_user=ansible
+
+#[webserver]
+#app01 ansible_user=ansible
+#app02 ansible_user=ansible
+
+#[servers]
+# # alias ansible_ssh_host=your_server_ip --> ssh root@your_server_ip, should have ssh keys
+# # Ansible will try to connect with local user if we do not specify
+#host1 ansible_ssh_host=192.0.2.1
+#host2 ansible_ssh_host=192.0.2.2
+#host3 ansible_ssh_host=192.0.2.3
+
+
+#REF: https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-ubuntu-16-04
+#We can create a file that tells all of the servers in the “servers” group to connect using the root user.
+
+#To do this, we will create a directory in the Ansible configuration structure called group_vars. Within this folder, we can create YAML-formatted files for each group we want to configure:
+
+#sudo mkdir /etc/ansible/group_vars
+#sudo nano /etc/ansible/group_vars/servers
+
+#We can put our configuration in here. YAML files start with “—”, so make sure you don’t forget that part.
+
+#/etc/ansible/group_vars/servers
+#---
+#ansible_ssh_user: root
+
+#Save and close this file when you are finished.
+#If you want to specify configuration details for every server, regardless of group association, you can put those details in a file at /etc/ansible/group_vars/all. Individual hosts can be configured by creating files under a directory at /etc/ansible/host_vars.

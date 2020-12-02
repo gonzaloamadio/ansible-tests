@@ -1,0 +1,65 @@
+---
+ - name: JsonQuery Playbook
+   hosts: localhost
+   tasks:
+     - name: Download JSON content play
+       uri:
+         url: https://jsonplaceholder.typicode.com/users
+         return_content: yes
+       register: jsoncontent
+
+
+     - name: Business Card
+       debug: msg="{{ jsoncontent.json | json_query(jmesquery) }}"
+       vars:
+         # This is the MultiSelect syntax of jmespath
+         jmesquery: "[*].{Name: name, Email: email, Phone: phone, CompanyName: company.name, WebSite: website, City: address.city}"
+
+     - name: Just the Names
+       debug: msg="{{ jsoncontent.json | json_query(jmesquery)}}"
+       vars:
+         jmesquery: "[*].name"
+
+    # Limit / Filter info
+     - name: Business Card for a person
+       debug: msg="{{ jsoncontent.json | json_query(jmesquery)}}"
+       vars:
+         jmesquery: "[? name==`Leanne Graham`].{Name: name, Email: email, Phone: phone, CompanyName: company.name, WebSite: website, City: address.city}"
+
+     - name: Business Card for a person2
+       debug: msg="{{ jsoncontent.json | json_query(jmesquery)}}"
+       vars:
+         jmesquery: "[? name==`Leanne Graham` || name==`Ervin Howell`].{Name: name, Email: email, Phone: phone, CompayName: company.name, WebSite: website, City: address.city}"
+
+    # see how to parse the json_query result in an ansible loop and create some dynamic variables (or) use them in the task.
+    # Here we are NOT going to use major jmes query. Rather, we are going to use Ansible’s inbuilt features like combine to create the phonebook.
+    # - phonebook|default({})  creates a new dictionary named phonebook
+    # - combine ({item.name : item.phone}) used to add an element in the dictionary.
+    # no_log this prevents the content being displayed as ansible loop iterate the json which is otherwise displayed
+     - name: Collecting UserName and Mobile Number info
+       no_log: True
+       set_fact:
+         phonebook: "{{phonebook|default({}) | combine ( {item.name : item.phone}) }}"
+       with_items: "{{ jsoncontent.json | json_query('[*]')}}"
+
+     - name: The Phonebook
+       debug: var=phonebook
+
+
+
+# REF: https://www.middlewareinventory.com/blog/ansible_json_query/
+
+# This playbook does:
+#
+# 1) Download the preceding JSON users data from the JSON placeholder URL
+# 2) Using the ansible json_query filter. Print the following fields for each user ( with custom key names)
+# Name
+# Email
+# Phone
+# CompanyName
+# WebSite
+
+#
+# 3) Get only the name field
+# 4 and 5) filter data by a fiel matching
+# 6) 
